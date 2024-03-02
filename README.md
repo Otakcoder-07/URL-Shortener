@@ -46,5 +46,5 @@ The URL shortener will start running on port `8080`. You can access it by visiti
 
 ### Contributors
 
-- [Your Name](https://github.com/Otakcoder07) - Shamith Chandra
+- (https://github.com/Otakcoder07) - Shamith Chandra
 
