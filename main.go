@@ -3,9 +3,8 @@ package main
 //Importing packages
 import (
 	"fmt"
-	// "math/rand"
+	"math/rand"
 	"net/http"
-	// "time"
 )
 type URLShortener struct{
 	urls map[string] string
@@ -43,5 +42,60 @@ func (us *URLShortener) HandleShorten(w http.ResponseWriter, r *http.Request) {
         </form>
     `, originalURL, shortenedURL, shortenedURL)
     fmt.Fprintf(w, responseHTML)
+}
+
+func (us *URLShortener) HandleRedirect(w http.ResponseWriter, r *http.Request) {
+    shortKey := r.URL.Path[len("/short/"):]
+    if shortKey == "" {
+        http.Error(w, "Shortened key is missing", http.StatusBadRequest)
+        return
+    }
+
+    // Retrieve the original URL from the `urls` map using the shortened key
+    originalURL, found := us.urls[shortKey]
+    if !found {
+        http.Error(w, "Shortened key not found", http.StatusNotFound)
+        return
+    }
+
+    // Redirect the user to the original URL
+    http.Redirect(w, r, originalURL, http.StatusMovedPermanently)
+}
+
+
+func generateShortKey() string {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    const keyLength = 6
+
+    key := make([]byte, keyLength)
+    for i := range key {
+        key[i] = charset[rand.Intn(len(charset))]
+    }
+    return string(key)
+}
+
+// func main()
+// {
+// 	shortener :=&URLShortener{
+// 		urls:make(map[string]string),
+// 	}
+	
+//     http.HandleFunc("/shorten", shortener.HandleShorten)
+//     http.HandleFunc("/short/", shortener.HandleRedirect)
+
+//     fmt.Println("URL Shortener is running on :8080")
+//     http.ListenAndServe(":8080", nil)
+// }
+
+func main() {
+    shortener := &URLShortener{
+        urls: make(map[string]string),
+    }
+
+    http.HandleFunc("/shorten", shortener.HandleShorten)
+    http.HandleFunc("/short/", shortener.HandleRedirect)
+
+    fmt.Println("URL Shortener is running on :8080")
+    http.ListenAndServe(":8080", nil)
 }
 
